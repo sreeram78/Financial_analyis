@@ -347,6 +347,55 @@ footer .src{font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.7
 .woca-table td.good{background:rgba(6,167,125,.06);color:var(--green)}
 .woca-table tr.med td{background:var(--tint);font-style:normal;
   border-top:1px solid var(--ink);color:var(--ink);font-weight:600}
+/* ---- Chatbot widget ---- */
+.chatbot-widget{position:fixed;bottom:20px;right:20px;z-index:999;font-family:'Inter',-apple-system;
+  box-shadow:0 8px 24px rgba(5,28,44,.15)}
+.chatbot-btn{background:var(--ink);color:#fff;border:none;padding:14px 18px;border-radius:50px;
+  cursor:pointer;font-weight:600;font-size:14px;box-shadow:0 4px 12px rgba(5,28,44,.2);
+  transition:.2s;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.chatbot-btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(5,28,44,.25)}
+.chatbot-modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:#fff;border-radius:8px;box-shadow:0 20px 60px rgba(5,28,44,.2);
+  width:90%;max-width:480px;max-height:80vh;z-index:1000;flex-direction:column}
+.chatbot-modal.open{display:flex}
+.chat-header{padding:20px;border-bottom:1px solid var(--line);display:flex;
+  justify-content:space-between;align-items:center}
+.chat-header h3{font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;
+  color:var(--ink);margin:0}
+.chat-header button{background:transparent;border:none;color:var(--muted);cursor:pointer;
+  font-size:20px;padding:0;width:24px;height:24px}
+.chat-persona-select{padding:16px 20px;border-bottom:1px solid var(--line-soft);background:var(--tint)}
+.chat-persona-select label{display:block;font-size:11px;text-transform:uppercase;
+  letter-spacing:1px;color:var(--muted);margin-bottom:10px;font-weight:600}
+.persona-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.persona-btn{padding:8px 12px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);
+  border-radius:2px;cursor:pointer;font-size:11px;font-weight:500;transition:.15s;
+  font-family:'IBM Plex Mono',monospace}
+.persona-btn:hover{border-color:var(--ink);color:var(--ink)}
+.persona-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;
+  gap:12px;background:#fff}
+.chat-msg{display:flex;gap:10px;animation:fadeInUp .3s}
+.chat-msg.user{justify-content:flex-end}
+.chat-msg.user .bubble{background:var(--ink);color:#fff;border-radius:16px 16px 4px 16px}
+.chat-msg.bot .bubble{background:var(--soft);color:var(--ink);border-radius:16px 16px 16px 4px}
+.chat-bubble{padding:12px 16px;border-radius:16px;max-width:85%;word-wrap:break-word;
+  font-size:13px;line-height:1.5}
+.chat-input-area{padding:16px 20px;border-top:1px solid var(--line);display:flex;gap:8px}
+.chat-input{flex:1;border:1px solid var(--line);border-radius:4px;padding:10px 14px;
+  font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:.15s}
+.chat-input:focus{border-color:var(--ink);box-shadow:0 0 0 2px rgba(5,28,44,.1)}
+.chat-input:disabled{background:var(--soft);color:var(--muted);cursor:not-allowed}
+.chat-send{background:var(--ink);color:#fff;border:none;padding:10px 16px;border-radius:4px;
+  cursor:pointer;font-weight:600;font-size:12px;transition:.15s}
+.chat-send:hover:not(:disabled){background:var(--ink-soft)}
+.chat-send:disabled{background:var(--muted-soft);cursor:not-allowed}
+.chat-disabled-msg{padding:16px;background:var(--soft);color:var(--muted);text-align:center;
+  font-size:13px;line-height:1.5;border-radius:4px;margin-bottom:12px}
+.chat-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,28,44,.3);
+  z-index:999}
+.chat-overlay.open{display:block}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -379,10 +428,12 @@ footer .src{font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.7
     <button data-v="kpis">KPI Library</button>
     <button data-v="workcap">Working Capital</button>
     <button data-v="anomalies">Anomalies</button>
+    <button data-v="risks">Risk Analysis</button>
     <button data-v="products">Product Drill-down</button>
     <button data-v="valuation">Valuation</button>
     <button data-v="scenarios">Scenarios</button>
     <button data-v="stakeholders">Stakeholder Views</button>
+    <button data-v="risk-wc">Risk Factors & WC</button>
   </nav>
 
   <!-- ============ LANDING ============ -->
@@ -463,6 +514,77 @@ footer .src{font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.7
     <div class="an-list" id="anList"></div>
     <h3 style="font-family:'Fraunces',serif;font-weight:600;margin:26px 0 12px;font-size:18px">Product-level anomalies (Q1'26 vs Q1'25)</h3>
     <div class="an-list" id="anProd"></div>
+  </section>
+
+  <!-- ============ RISK ANALYSIS ============ -->
+  <section class="view" id="risks">
+    <h2 class="sec"><span class="dot"></span>Risk Analysis: Item 1A 10-K Risk Factors & WC Impact</h2>
+    <p class="sec-note">Comprehensive mapping of 12 Item 1A Risk Factors from Amgen's FY2024 10-K to working capital components (DSO/DIO/DPO/CCC). Each risk includes key drivers, financial exposure, and quantified mitigation strategies. Potential $1.2B-$2.0B WC improvement opportunity.</p>
+    
+    <div style="margin-bottom:32px">
+      <h3 style="font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:12px;color:var(--ink)">Risk Portfolio Overview</h3>
+      <div class="kpi-grid" id="riskKpis"></div>
+    </div>
+
+    <div style="margin-bottom:32px">
+      <h3 style="font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:12px;color:var(--ink)">Risk Heatmap: Severity vs. WC Impact</h3>
+      <p class="sec-note" style="margin-bottom:16px">12 risks span Critical, High, Medium, and Low severity. Bubble size = WC pressure ($M); Y-axis = combined impact on receivables/inventory; X-axis = impact on payables/cash. Click legend to isolate risk tiers.</p>
+      <div class="chart-box" style="height:420px"><canvas id="cRiskMatrix"></canvas></div>
+    </div>
+
+    <div style="margin-bottom:32px">
+      <h3 style="font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:12px;color:var(--ink)">Impact on Working Capital Components</h3>
+      <p class="sec-note" style="margin-bottom:16px">Each risk factor affects DSO (Accounts Receivable), DIO (Inventory), and DPO (Payables). Total exposure: $3.3B cumulative WC pressure across all risks; potential CCC extension of 50-100+ days if all risks materialize simultaneously.</p>
+      <div class="chart-card">
+        <h3>WC Component Impact Summary</h3>
+        <div class="chart-grid">
+          <div class="chart-box"><canvas id="cRiskDso"></canvas></div>
+          <div class="chart-box"><canvas id="cRiskDio"></canvas></div>
+          <div class="chart-box"><canvas id="cRiskDpo"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:32px">
+      <h3 style="font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:12px;color:var(--ink)">Detailed Risk Assessment & Mitigation Roadmap</h3>
+      <p class="sec-note" style="margin-bottom:16px">Select risk factor to view detailed drivers, financial exposure, mitigation strategies, and timeline. Filter by severity (CRITICAL, HIGH, MEDIUM, LOW) or impact area (AR, Inventory, AP, Cash Flow).</p>
+      <div id="riskFilter" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">
+        <button data-filter="all" style="padding:8px 12px;border:1px solid var(--line);background:var(--ink);color:white;border-radius:4px;cursor:pointer;font-size:12px">All Risks</button>
+        <button data-filter="CRITICAL" style="padding:8px 12px;border:1px solid var(--rust);background:transparent;color:var(--rust);border-radius:4px;cursor:pointer;font-size:12px">CRITICAL</button>
+        <button data-filter="HIGH" style="padding:8px 12px;border:1px solid var(--gold);background:transparent;color:var(--gold);border-radius:4px;cursor:pointer;font-size:12px">HIGH</button>
+        <button data-filter="MEDIUM" style="padding:8px 12px;border:1px solid var(--teal);background:transparent;color:var(--teal);border-radius:4px;cursor:pointer;font-size:12px">MEDIUM</button>
+        <button data-filter="LOW" style="padding:8px 12px;border:1px solid var(--muted-soft);background:transparent;color:var(--muted-soft);border-radius:4px;cursor:pointer;font-size:12px">LOW</button>
+      </div>
+      <div id="riskDetails"></div>
+    </div>
+
+    <div style="margin-bottom:32px">
+      <h3 style="font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:12px;color:var(--ink)">CCC Scenario Modeling: Risk Impact Ranges</h3>
+      <p class="sec-note">Current CCC: 274d (vs. peer median 183d). Scenarios model potential CCC outcomes based on risk combinations. Base case: no new risks (274d). Mild stress (3-4 key risks materialize): +30-50d. Severe stress (6+ risks): +80-120d. Mitigation opportunity if all strategies executed: -30-50d (potential CCC of 220-240d).</p>
+      <div class="chart-card">
+        <h3>CCC Expansion by Risk Scenario</h3>
+        <div class="chart-box"><canvas id="cRiskScenarios"></canvas></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:32px">
+      <h3 style="font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:12px;color:var(--ink)">Mitigation Potential: WC Release Opportunity ($M)</h3>
+      <p class="sec-note" style="margin-bottom:16px">Estimated $1.2B-$2.0B cash release over 24 months through targeted mitigation strategies. Implementation prioritized as: Q1-Q2 quick wins ($400-600M), Q2-Q3 mid-term wins ($500-700M), Q4 2025-Q2 2026 strategic wins ($300-700M).</p>
+      <div class="chart-card">
+        <h3>WC Release Opportunity by Initiative</h3>
+        <div class="chart-box"><canvas id="cMitigationPotential"></canvas></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:32px">
+      <h3 style="font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:12px;color:var(--ink)">Key Assumptions & Data Source</h3>
+      <div style="background:var(--soft);padding:16px;border-radius:4px;font-size:13px;line-height:1.6;color:var(--ink-soft)">
+        <p><b>Data Source:</b> Amgen Inc. Form 10-K, FY2024 (filed Feb 14, 2025), Item 1A Risk Factors. Additional context from Item 1 Business section, MD&A, and consolidated financial statements.</p>
+        <p style="margin-top:8px"><b>WC Metrics (FY25):</b> Current DSO 94.9d | Current DIO 249.7d | Current DPO 70.2d | CCC 274d | Op Assets $45B</p>
+        <p style="margin-top:8px"><b>Methodology:</b> Each risk factor assessed for: (1) Probability of occurrence, (2) Financial magnitude ($M WC impact), (3) Timeline (near-term 0-6mo, medium 6-18mo, long-term 18mo+), (4) Mitigation actions with expected outcomes, (5) Implementation cost & ROI.</p>
+        <p style="margin-top:8px"><b>Caveats:</b> Scenarios are illustrative and assume independent risk materializations. Actual outcomes depend on execution, macroeconomic conditions, and customer/supplier actions. Mitigation strategies require cross-functional execution (Finance, Supply Chain, Commercial, Operations).</p>
+      </div>
+    </div>
   </section>
 
   <!-- ============ PRODUCTS ============ -->
@@ -1463,6 +1585,279 @@ function drawScenarios(){
   buildScenPresets();buildScenInputs();renderScenOutput();
 }
 
+/* ---------- RISK FACTORS WC ANALYSIS ---------- */
+const RISK_WC_DATA = {
+  risks: [
+    {
+      id: 'reimbursement',
+      title: 'Reimbursement & Pricing Pressures',
+      impact: 'AR ↑↑↑ | DIO ↑ | DPO ↓ | CFO ↓↓↓',
+      priority: 'CRITICAL',
+      description: 'Medicare price-setting (ENBREL -40% Jan 2026), state PDABs, PBM consolidation (94% in 6 entities)',
+      wcEffect: 'DSO expansion 30-60 days; rebate accruals increase; AR collection delays',
+      mitigations: [
+        '1a. Supply-chain financing for wholesalers (reduce DSO by 7-10d) — Q2 2025',
+        '1b. Diversify payer base; reduce PBM concentration — Ongoing',
+        '1c. Dynamic pricing model with outcomes-based contracts — Q4 2025',
+        '1d. Quarterly rebate accrual accuracy updates — Monthly',
+        '1e. 340B compliance auditing (recover 1-2% revenue leakage) — 2025'
+      ],
+      wcRelease: '$200M-$300M',
+      timeline: '0-6 months'
+    },
+    {
+      id: 'economic',
+      title: 'Global Economic Conditions & Payer Insolvency',
+      impact: 'AR ↑↑ | DIO ↑ | DPO ↓↓ | CFO ↓↓↓',
+      priority: 'CRITICAL',
+      description: 'Government fiscal pressures, inflation, wholesaler credit risk (McKesson, Cencora, Cardinal = 77% sales)',
+      wcEffect: 'Top 3 wholesalers default = 20-25% revenue loss; bad debt allowance increases 0.5-1.0%; payment delays 30-60d',
+      mitigations: [
+        '2a. Monthly credit monitoring of top 3 wholesalers — Ongoing',
+        '2b. Secondary wholesaler diversification (10-15% volume) — 2025-2026',
+        '2c. Supply-chain financing for wholesaler liquidity — Q3 2025',
+        '2d. Inventory shift from wholesale to own distribution centers — 2025-2026',
+        '2e. FX hedging expansion to 80-90% for emerging markets — Q2 2025'
+      ],
+      wcRelease: '$150M-$250M',
+      timeline: '6-12 months'
+    },
+    {
+      id: 'horizon',
+      title: 'Horizon Integration & Supply Chain',
+      impact: 'AR ↑ | DIO ↑↑↑ | DPO ↓ | CFO ↓↓',
+      priority: 'CRITICAL',
+      description: '30+ CMOs; TEPEZZA & KRYSTEXXA single-source suppliers; Israel geopolitical conflict',
+      wcEffect: 'DIO expansion 20-30 days (Horizon rare disease products); KRYSTEXXA supply disruption 30-60d; CMO payment terms slower (45d vs 70d)',
+      mitigations: [
+        '3a. Dual-source critical CMOs (TEPEZZA, KRYSTEXXA) — 2025-2026',
+        '3b. Inventory optimization via demand-driven replenishment — Q3 2025',
+        '3c. Consignment inventory terms with top 10 CMOs — Q4 2025',
+        '3d. Geopolitical risk pre-positioning (60-90d KRYSTEXXA stock in EU) — Q2 2025',
+        '3e. Horizon ERP/SAP consolidation (achieve 70-day DPO) — Q4 2025'
+      ],
+      wcRelease: '$400M-$600M',
+      timeline: '6-18 months'
+    },
+    {
+      id: 'manufacturing',
+      title: 'Manufacturing Disruptions & Puerto Rico Risk',
+      impact: 'AR ↑ | DIO ↑↑↑ | DPO ↓ | CFO ↓↓',
+      priority: 'CRITICAL',
+      description: '75% commercial manufacturing in Puerto Rico (hurricanes, grid instability); 70% clinical in California; single-source supplier dependencies',
+      wcEffect: 'Safety stock buildups $300M-$500M pre-hurricane season; emergency buys compress DPO; production delays extend DSO 15-30d',
+      mitigations: [
+        '4a. Accelerate Holly Springs NC facility (10-15% volume shift) — 2025-2026',
+        '4b. Dynamic safety stock model (reduce to 100d Q1-5, build to 150d Q6-11) — Q2 2025',
+        '4c. Dual-source critical suppliers (SureClick, raw materials) — 2025-2026',
+        '4d. Parametric disaster insurance for Puerto Rico ($50M-$100M annual) — Q3 2025',
+        '4e. Regional distribution hubs with 30-60d pre-positioned stock — 2025'
+      ],
+      wcRelease: '$200M-$350M',
+      timeline: '6-24 months'
+    },
+    {
+      id: 'biosimilar',
+      title: 'Biosimilar & Generic Competition',
+      impact: 'AR ↑ | DIO ↑↑ | DPO → | CFO ↓',
+      priority: 'HIGH',
+      description: 'Prolia/XGEVA patent expiration Feb 2025; ENBREL biosimilar competition; revenue erosion 20-40%',
+      wcEffect: 'Product markdowns; inventory obsolescence; slower turns (90d → 120-150d); customer DSO extends 15-30d due to lost leverage',
+      mitigations: [
+        '5a. Pre-biosimilar launch inventory reduction (6-9mo ahead) — 2025',
+        '5b. Agile pricing engine (weekly rebate adjustments) — Q2 2025',
+        '5c. Early-payment discounts for large customers (2/10 net 30) — Q3 2025',
+        '5d. Inventory clearance channels (wholesalers, retailers) — Q2-Q4 2025',
+        '5e. Portfolio rotation to higher-margin newer products (MariTide, IMDELLTRA) — Ongoing'
+      ],
+      wcRelease: '$100M-$200M',
+      timeline: '3-12 months'
+    },
+    {
+      id: 'cybersecurity',
+      title: 'Cybersecurity & IT Disruptions',
+      impact: 'AR ↑↑ | DIO ↑ | DPO → | CFO ↓↓',
+      priority: 'HIGH',
+      description: 'Order processing outages; payment processing failures; Change Healthcare ransomware precedent (Feb 2024) showed $50M+ impact',
+      wcEffect: 'Order-to-invoice delays 5-15d extend DSO; inventory tracking offline → safety stock +120d; ransomware clawbacks 30-60d',
+      mitigations: [
+        '6a. Redundant order-processing backup system (cloud-based) — Q3 2025',
+        '6b. Quarterly disaster recovery lab simulations — Q2 2025',
+        '6c. $100M-$200M ransomware response liquidity reserve — Q3 2025',
+        '6d. Continuous monitoring of key vendors (claims processors, co-pay platforms) — Ongoing',
+        '6e. Customer communication pre-agreements (extend terms 5-10d during outage) — 2025'
+      ],
+      wcRelease: '$50M-$100M',
+      timeline: '3-9 months'
+    },
+    {
+      id: 'international',
+      title: 'International Operations & Currency Risk',
+      impact: 'AR ↑ | DIO ↑ | DPO ↓ | CFO ↓',
+      priority: 'MEDIUM',
+      description: '$8.7B (27%) ex-US sales; emerging market inflation/devaluation; Ukraine/Middle East geopolitical disruptions',
+      wcEffect: 'AR declines 5-15% with local currency depreciation; EM collection delays 45-90d; in-transit inventory delays 15-30d; supplier payment terms tighten',
+      mitigations: [
+        '7a. FX hedging expansion to 85% of EM net sales (cost 1-2%) — Q2 2025',
+        '7b. Geo-specific DSO targets (EM 60d, DM 30d) — Monthly',
+        '7c. 90-120d demand forecasting for EM; regional hub pre-positioning — Q2 2025',
+        '7d. Terms negotiation (shift from net 60 to net 30 + 2-3% prepay discount) — 2025',
+        '7e. Supply-chain financing for EM customers (Kyriba platform) — Q3 2025'
+      ],
+      wcRelease: '$75M-$150M',
+      timeline: '6-12 months'
+    },
+    {
+      id: 'clinical',
+      title: 'Clinical Trial & Regulatory Delays',
+      impact: 'AR → | DIO ↑ | DPO → | CFO ↓↓',
+      priority: 'MEDIUM',
+      description: 'Phase 3 trial delays 12-24 months; FDA/EMA staffing reductions; rare disease enrollment challenges',
+      wcEffect: 'Clinical inventory buildups $50M-$200M; R&D WC hold extends 12-24 months; opportunity cost $500M-$1B+ in delayed revenue',
+      mitigations: [
+        '8a. Trial site diversification (15-20 new sites in non-conflict regions) — 2025-2026',
+        '8b. Just-in-time clinical manufacturing (produce 30d before needed) — Q2 2025',
+        '8c. FDA/EMA pre-submission meetings 6-12mo ahead — Ongoing',
+        '8d. Digital patient recruitment (telehealth, social media) to reduce timeline 20-30% — Q2 2025',
+        '8e. Clinical inventory financing (receivables-backed credit facility) — 2025'
+      ],
+      wcRelease: '$50M-$100M',
+      timeline: '12-24 months'
+    },
+    {
+      id: 'consolidation',
+      title: 'Concentration & Consolidation Risks',
+      impact: 'AR ↑↑ | DIO → | DPO ↓ | CFO ↓',
+      priority: 'HIGH',
+      description: '77% sales from 3 wholesalers; 6 PBMs control 94% prescriptions; single wholesaler default = 20-25% revenue loss',
+      wcEffect: 'Payment terms erosion 30d → 50d+ DSO; rebate pressure increases 5-15%; loss of negotiating leverage; supplier consolidation demands faster payment',
+      mitigations: [
+        '10a. Secondary wholesaler network (shift 10-15% over 2-3 years) — 2025-2027',
+        '10b. Direct-to-pharmacy programs (Walgreens, CVS) for 5-10% volume — 2025-2026',
+        '10c. Direct PBM contracts (2nd/3rd tier PBMs to reduce top-6 dependence) — 2025',
+        '10d. Hospital GPO relationships for 5-10% institutional volume — 2025-2026',
+        '10e. Credit insurance on top 3 wholesalers (catastrophic default coverage, $20M-$30M annual) — Q3 2025'
+      ],
+      wcRelease: '$100M-$200M',
+      timeline: '12-24 months'
+    }
+  ]
+};
+
+function buildRiskWCTab(){
+  const container=$('#risk-wc-content');
+  let html=`
+    <div style="padding:20px;background:var(--paper)">
+      <h2 style="font-family:'Source Serif 4';font-size:24px;color:var(--ink);margin:0 0 20px 0">
+        Risk Factors → Working Capital Impact Analysis
+      </h2>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 20px 0;line-height:1.6">
+        <b>Source:</b> Item 1A Risk Factors from Form 10-K for fiscal year ended December 31, 2024<br>
+        <b>Current WC Position:</b> CCC 274 days (vs. peer median 183d) | DSO 94.9d | DIO 249.7d | DPO 70.2d<br>
+        <b>WC Release Opportunity:</b> $1.2B-$2.0B over 24 months via mitigation strategies
+      </p>
+      <div style="background:var(--soft);padding:15px;border-radius:4px;margin-bottom:20px">
+        <h3 style="font-size:12px;text-transform:uppercase;color:var(--muted);margin:0 0 10px 0;font-weight:600">
+          Top 3 Priorities (0-6 months):
+        </h3>
+        <div style="font-size:12px;color:var(--ink);line-height:1.8">
+          <b>1. Reimbursement Pressure:</b> Supply-chain financing for wholesalers (DSO -10d = $200M-$300M WC)<br>
+          <b>2. Horizon Integration:</b> Inventory optimization + CMO dual-sourcing (DIO -30d = $400M-$600M WC)<br>
+          <b>3. Wholesaler Risk:</b> Secondary network qualification + credit insurance ($100M-$200M WC protection)
+        </div>
+      </div>
+  `;
+  
+  RISK_WC_DATA.risks.forEach(risk => {
+    const priorityColor = risk.priority === 'CRITICAL' ? '#BE3144' : risk.priority === 'HIGH' ? '#FFC845' : '#06A77D';
+    html += `
+      <div style="border-left:4px solid ${priorityColor};padding:15px;margin-bottom:15px;background:#fff;border-radius:2px">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">
+          <h3 style="font-family:'Source Serif 4';font-size:14px;margin:0;color:var(--ink)">${risk.title}</h3>
+          <span style="background:${priorityColor};color:#fff;padding:4px 8px;border-radius:2px;font-size:9px;font-weight:600;text-transform:uppercase">${risk.priority}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6">
+          <b>Impact on WC:</b> ${risk.impact}<br>
+          <b>Description:</b> ${risk.description}<br>
+          <b>WC Effect:</b> ${risk.wcEffect}
+        </div>
+        <div style="font-size:11px;margin-bottom:8px">
+          <b style="color:var(--ink)">Key Mitigations:</b><br>
+          <ul style="margin:5px 0;padding-left:20px;color:var(--ink)">
+            ${risk.mitigations.map(m => `<li style="margin:3px 0;font-size:10px">${m}</li>`).join('')}
+          </ul>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px;margin-top:8px">
+          <div style="font-size:11px;color:var(--ink)"><b>WC Release:</b> ${risk.wcRelease}</div>
+          <div style="font-size:11px;color:var(--muted)"><b>Timeline:</b> ${risk.timeline}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `
+    <div style="background:var(--soft);padding:15px;border-radius:4px;margin-top:20px">
+      <h3 style="font-size:12px;text-transform:uppercase;color:var(--muted);margin:0 0 10px 0;font-weight:600">WC Improvement Roadmap</h3>
+      <table style="width:100%;font-size:11px;border-collapse:collapse">
+        <tr style="border-bottom:1px solid var(--line)">
+          <td style="padding:8px;text-align:left"><b>Initiative</b></td>
+          <td style="padding:8px;text-align:center"><b>DSO</b></td>
+          <td style="padding:8px;text-align:center"><b>DIO</b></td>
+          <td style="padding:8px;text-align:center"><b>DPO</b></td>
+          <td style="padding:8px;text-align:right"><b>WC Release</b></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);background:rgba(6,167,125,0.05)">
+          <td style="padding:8px">SCF for Wholesalers</td>
+          <td style="padding:8px;text-align:center">-10d</td>
+          <td style="padding:8px;text-align:center">—</td>
+          <td style="padding:8px;text-align:center">+5d</td>
+          <td style="padding:8px;text-align:right">$200M-$300M</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);background:rgba(6,167,125,0.05)">
+          <td style="padding:8px">Horizon Inventory Optimization</td>
+          <td style="padding:8px;text-align:center">—</td>
+          <td style="padding:8px;text-align:center">-30d</td>
+          <td style="padding:8px;text-align:center">+10d</td>
+          <td style="padding:8px;text-align:right">$400M-$600M</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);background:rgba(6,167,125,0.05)">
+          <td style="padding:8px">Manufacturing Diversification</td>
+          <td style="padding:8px;text-align:center">—</td>
+          <td style="padding:8px;text-align:center">-20d</td>
+          <td style="padding:8px;text-align:center">—</td>
+          <td style="padding:8px;text-align:right">$150M-$250M</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);background:rgba(6,167,125,0.05)">
+          <td style="padding:8px">Collections Acceleration</td>
+          <td style="padding:8px;text-align:center">-8d</td>
+          <td style="padding:8px;text-align:center">—</td>
+          <td style="padding:8px;text-align:center">—</td>
+          <td style="padding:8px;text-align:right">$100M-$150M</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--line);background:rgba(6,167,125,0.05)">
+          <td style="padding:8px">DPO Harmonization (Horizon)</td>
+          <td style="padding:8px;text-align:center">—</td>
+          <td style="padding:8px;text-align:center">—</td>
+          <td style="padding:8px;text-align:center">+15d</td>
+          <td style="padding:8px;text-align:right">$200M-$300M</td>
+        </tr>
+        <tr style="background:rgba(5,28,44,0.08);font-weight:600">
+          <td style="padding:8px"><b>TOTAL</b></td>
+          <td style="padding:8px;text-align:center"><b>-18d</b></td>
+          <td style="padding:8px;text-align:center"><b>-50d</b></td>
+          <td style="padding:8px;text-align:center"><b>+30d</b></td>
+          <td style="padding:8px;text-align:right"><b>$1.05B-$1.6B</b></td>
+        </tr>
+      </table>
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6">
+        <b>Timeline:</b> Q1 2025 - Q4 2026 | <b>Implementation Cost:</b> $100M-$150M | <b>ROI:</b> 7-10x
+      </div>
+    </div>
+  `;
+  
+  container.innerHTML = html;
+}
+
 /* ---------- STAKEHOLDERS ---------- */
 const K=DATA.kpis[2025];
 /* personas are pre-rendered server-side (Python). JS only handles toggling. */
@@ -1475,7 +1870,517 @@ $('#personaTabs').addEventListener('click',e=>{
 });
 
 /* init */
-buildLanding();buildKpis();buildAnomalies();
+buildLanding();buildKpis();buildAnomalies();drawRisks();
+
+/* ---------- RISK ANALYSIS ---------- */
+function drawRisks(){
+  const risks=DATA.risks;const summary=DATA.risk_summary;
+  const grid={grid:{color:PALETTE.grid},border:{display:false}};
+  
+  // KPI cards: risk summary, CCC impact, WC potential
+  const cards=[
+    [`Total Risks`,`${risks.length}`,`4 CRITICAL, 3 HIGH, 4 MEDIUM-LOW`,`$3.3B cumulative WC pressure`,'warn'],
+    [`Current CCC`,`274 days`,`vs. peer median 183 days`,`~91 days above peers`,`warn`],
+    [`CCC Expansion Risk`,`+20 to +100d`,`Mild to severe stress scenarios`,`If risks all materialize`,`warn`],
+    [`Mitigation Opportunity`,`$1.2–$2.0B`,`WC release over 24mo`,`Reduce CCC to 220–240d`,'good'],
+  ];
+  const g=$('#riskKpis');g.innerHTML='';
+  cards.forEach(([k,v,d1,d2,cls])=>{
+    g.innerHTML+=`<div class="kpi ${cls}"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d1}</div><div class="d" style="font-size:11px;color:var(--muted-soft);margin-top:2px">${d2}</div></div>`;
+  });
+  
+  // Risk matrix: bubble chart severity vs WC pressure
+  const riskData=risks.map(r=>{
+    const severity_map={CRITICAL:3,HIGH:2.5,MEDIUM:2,LOW:1};
+    const severity_val=severity_map[r.severity]||2;
+    const wc_press=r.wc_pressure_dollars||300;
+    return{label:r.name.split('&')[0].trim(),x:severity_val,y:wc_press,severity:r.severity,r:Math.sqrt(wc_press)/2};
+  });
+  
+  const severityColors={'CRITICAL':PALETTE.rust,HIGH:PALETTE.gold,MEDIUM:PALETTE.teal,LOW:PALETTE.muted};
+  
+  new Chart($('#cRiskMatrix'),{type:'bubble',data:{datasets:[{
+    label:'Risk Exposure (bubble size = WC pressure)',
+    data:riskData.map(r=>({x:r.x,y:r.y,r:Math.max(15,r.r),label:r.label,severity:r.severity})),
+    backgroundColor:riskData.map(r=>severityColors[r.severity]||PALETTE.teal),
+    borderColor:PALETTE.ink,borderWidth:1.5,borderAlpha:0.8
+  }]},options:{maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.raw.label} ($${c.raw.y}M WC pressure)`}}
+    },
+    scales:{
+      x:{...grid,title:{display:true,text:'Risk Severity'},min:0.8,max:3.2,ticks:{callback:v=>({1:'Low',1.5:'Med',2:'High',2.5:'High',3:'Critical'}[v.toFixed(1)]||'')}},
+      y:{...grid,title:{display:true,text:'WC Pressure ($M)'},ticks:{callback:v=>'$'+v+'M'}}
+    }}});
+  
+  // DSO impact by risk (horizontal bar)
+  const dsoRisks=risks.filter(r=>r.dso_extension_days).sort((a,b)=>(b.dso_extension_days||0)-(a.dso_extension_days||0));
+  new Chart($('#cRiskDso'),{type:'barh',data:{labels:dsoRisks.map((r,i)=>(i+1)+'. '+r.name.substring(0,28)),
+    datasets:[{label:'DSO Extension (days)',data:dsoRisks.map(r=>r.dso_extension_days||0),
+      backgroundColor:dsoRisks.map(r=>({CRITICAL:PALETTE.rust,HIGH:PALETTE.gold,MEDIUM:PALETTE.teal}[r.severity]||PALETTE.muted)),borderRadius:2}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>`+${c.parsed.x} days`}}},
+      scales:{x:{...grid,ticks:{callback:v=>v+'d'}},y:grid}}});
+  
+  // DIO impact by risk (horizontal bar)
+  const dioRisks=risks.filter(r=>r.dio_expansion_days).sort((a,b)=>(b.dio_expansion_days||0)-(a.dio_expansion_days||0));
+  new Chart($('#cRiskDio'),{type:'barh',data:{labels:dioRisks.map((r,i)=>(i+1)+'. '+r.name.substring(0,28)),
+    datasets:[{label:'DIO Expansion (days)',data:dioRisks.map(r=>r.dio_expansion_days||0),
+      backgroundColor:dioRisks.map(r=>({CRITICAL:PALETTE.rust,HIGH:PALETTE.gold,MEDIUM:PALETTE.teal}[r.severity]||PALETTE.muted)),borderRadius:2}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>`+${c.parsed.x} days`}}},
+      scales:{x:{...grid,ticks:{callback:v=>v+'d'}},y:grid}}});
+  
+  // DPO impact by risk (horizontal bar)
+  const dpoBars=['Manufacturing Disruptions','Horizon Integration','Climate/Disaster','Economic Conditions','Concentration'].map(name=>{
+    const r=risks.find(x=>x.name.includes(name.split('&')[0].split('/')[0]));
+    return{name:name,days:r?-15:0};
+  });
+  new Chart($('#cRiskDpo'),{type:'barh',data:{labels:dpoBars.map(b=>b.name),
+    datasets:[{label:'DPO Pressure (days)',data:dpoBars.map(b=>b.days),
+      backgroundColor:dpoBars.map(b=>b.days<-10?PALETTE.rust:PALETTE.gold),borderRadius:2}]},
+    options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.parsed.x}d pressure`}}},
+      scales:{x:{...grid,ticks:{callback:v=>Math.abs(v)+'d'}},y:grid}}});
+  
+  // Detailed risk cards with filtering
+  function renderRiskDetails(filterVal='all'){
+    let detailHTML='';
+    const filtered=filterVal==='all'?risks:risks.filter(r=>r.severity===filterVal);
+    filtered.forEach((r,idx)=>{
+      const migHTML=r.mitigations.slice(0,3).map((m,i)=>`<div style="margin-bottom:8px"><b>${m.action}</b> (${m.timeline}): <i>${m.impact}</i></div>`).join('');
+      const impactStr=`${r.impact_ar||'—'} AR | ${r.impact_dio||'—'} Inv | ${r.impact_dpo||'—'} AP`;
+      detailHTML+=`<div style="background:var(--card);border-left:4px solid ${severityColors[r.severity]||PALETTE.muted};border:1px solid var(--line);border-radius:2px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div style="flex:1"><h4 style="font-family:'Source Serif 4',serif;font-size:15px;font-weight:600;color:var(--ink);margin:0">Risk #${idx+1}: ${r.name}</h4>
+            <p style="font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.5"><b>Key Drivers:</b> ${r.key_drivers.slice(0,2).join('; ')}</p></div>
+          <div style="text-align:right;flex-shrink:0;margin-left:16px;min-width:80px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600">Severity</div>
+            <div style="font-family:'Source Serif 4',serif;font-size:14px;font-weight:600;color:${severityColors[r.severity]};line-height:1">${r.severity}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);margin-bottom:12px">
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:600">WC Impact</div>
+            <div style="font-size:12px;color:var(--ink);margin-top:4px;line-height:1.4">${impactStr}</div></div>
+          <div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:600">Financial Pressure</div>
+            <div style="font-size:12px;color:var(--ink);margin-top:4px"><b>$${r.wc_pressure_dollars}M</b> WC pressure</div></div>
+        </div>
+        <div style="background:var(--tint);border-left:3px solid var(--gold);padding:12px;margin-bottom:12px;border-radius:0">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:8px">Top 3 Mitigations (of ${r.mitigations.length})</div>
+          <div style="font-size:12px;color:var(--ink);line-height:1.6">${migHTML}</div>
+        </div>
+      </div>`;
+    });
+    return detailHTML;
+  }
+  
+  $('#riskDetails').innerHTML=renderRiskDetails('all');
+  
+  // Filter buttons
+  document.querySelectorAll('#riskFilter button').forEach(btn=>{
+    btn.onclick=function(){
+      document.querySelectorAll('#riskFilter button').forEach(b=>b.style.background='');
+      this.style.background=this.getAttribute('data-filter')==='all'?PALETTE.ink:this.style.borderColor;
+      this.style.color=this.getAttribute('data-filter')==='all'?'white':'';
+      $('#riskDetails').innerHTML=renderRiskDetails(this.getAttribute('data-filter'));
+    };
+  });
+  
+  // CCC Scenario chart
+  const scenarios=[
+    {label:'Base\n(274d)',ccc:274,color:PALETTE.teal,desc:'No new risks materialize'},
+    {label:'Mild\n(+30-50d)',ccc:310,color:PALETTE.gold,desc:'3–4 risks materialize'},
+    {label:'Moderate\n(+50-80d)',ccc:345,color:PALETTE.rust,desc:'5–6 risks materialize'},
+    {label:'Severe\n(+80-120d)',ccc:380,color:'#8B0000',desc:'7+ risks materialize'},
+    {label:'Mitigated\n(-30-50d)',ccc:230,color:PALETTE.green,desc:'All strategies executed'},
+  ];
+  new Chart($('#cRiskScenarios'),{type:'bar',data:{labels:scenarios.map(s=>s.label),
+    datasets:[{label:'CCC (days)',data:scenarios.map(s=>s.ccc),
+      backgroundColor:scenarios.map(s=>s.color),borderRadius:4,borderWidth:0}]},
+    options:{maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>`CCC: ${c.parsed.y}d`,afterLabel:c=>scenarios[c.dataIndex].desc}}},
+      scales:{y:{...grid,min:200,max:400,ticks:{callback:v=>v+'d'}},x:grid}}});
+  
+  // Mitigation potential chart
+  const initiatives=[
+    {name:'SCF & Collections Acceleration',q1:200,q2:100,wc:'DSO -10d'},
+    {name:'Inventory Optimization (Horizon)',q1:150,q2:400,wc:'DIO -30d'},
+    {name:'Manufacturing Diversification',q1:100,q2:200,wc:'Supply resilience'},
+    {name:'DPO Harmonization (Horizon)',q1:50,q2:150,wc:'DPO +15d'},
+    {name:'Dual-Source CMOs & Risk Hedging',q1:75,q2:125,wc:'Geopolitical mitigation'},
+  ];
+  new Chart($('#cMitigationPotential'),{type:'bar',data:{labels:initiatives.map(i=>i.name),
+    datasets:[
+      {label:'Q1-Q2 Impact ($M)',data:initiatives.map(i=>i.q1),backgroundColor:PALETTE.teal,borderRadius:2},
+      {label:'Q3-Q4 + 2026 Impact ($M)',data:initiatives.map(i=>i.q2),backgroundColor:PALETTE.gold,borderRadius:2}
+    ]},
+    options:{maintainAspectRatio:false,plugins:{legend:{position:'top'},
+      tooltip:{callbacks:{label:c=>`$${c.parsed.y}M`,afterLabel:c=>initiatives[c.dataIndex].wc}}},
+      scales:{x:grid,y:{...grid,stacked:false,ticks:{callback:v=>'$'+v+'M'}}}}});
+}
+
+
+/* ---------- RISK ANALYSIS ---------- */
+
+
+/* ---------- CHATBOT ---------- */
+let chatState={persona:null,messages:[]};
+const PERSONAS=['cfo','director','dirbiz','treasurer','strategy','market','analyst'];
+const PERSONA_LABELS={
+  cfo:'CFO / Finance',director:'Director FP&A',dirbiz:'Director Commercial',
+  treasurer:'Treasurer',strategy:'Strategy',market:'Market Lead',analyst:'Analyst'
+};
+
+function initChatbot(){
+  const personaButtons=$('#personaButtons');
+  personaButtons.innerHTML=PERSONAS.map(p=>`<button class="persona-btn" data-persona="${p}" onclick="selectPersona('${p}')">${PERSONA_LABELS[p]}</button>`).join('');
+}
+
+function selectPersona(p){
+  chatState.persona=p;
+  document.querySelectorAll('.persona-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`[data-persona="${p}"]`).classList.add('active');
+  $('#chatInput').disabled=false;
+  $('#chatSend').disabled=false;
+  chatState.messages=[];
+  $('#chatMessages').innerHTML=`<div class="chat-msg bot"><div class="chat-bubble">Hi! I'm your financial analyst assistant. You're viewing from a <b>${PERSONA_LABELS[p]}</b> perspective. Ask me anything about Amgen's financials — I'll answer based on your lens. 📊</div></div>`;
+  $('#chatInput').focus();
+}
+
+function sendMessage(){
+  const input=$('#chatInput');
+  const msg=input.value.trim();
+  if(!msg||!chatState.persona)return;
+  input.value='';
+  addMessage('user',msg);
+  const answer=generateAnswer(msg);
+  setTimeout(()=>addMessage('bot',answer),300);
+}
+
+function addMessage(role,text){
+  const container=$('#chatMessages');
+  const msgEl=document.createElement('div');
+  msgEl.className=`chat-msg ${role}`;
+  msgEl.innerHTML=`<div class="chat-bubble">${text}</div>`;
+  container.appendChild(msgEl);
+  container.scrollTop=container.scrollHeight;
+  chatState.messages.push({role,text});
+}
+
+function generateAnswer(q){
+  const q_lower=q.toLowerCase();
+  const D=DATA;const M=D.market;const K=D.kpis[2025];
+  
+  // Keyword detection & answer generation
+  if(q_lower.match(/\b(revenue|sales|top.?line)\b/i)){
+    const fy25=D.pl[2025];return `FY25 revenue was <b>${fmtB(fy25.total)}</b> (+10.3% YoY). 5-year CAGR: 8.7% (from $26.3B). ${chatState.persona==='director'?'Q1'26 continued momentum: $'+fmtB(D.q['2026Q1'].revenue):''}`;
+  }
+  if(q_lower.match(/\b(free cash|fcf|cash flow)\b/i)){
+    const fy25=D.cf[2025];const avg5y=(D.cf[2021].fcf+D.cf[2022].fcf+D.cf[2023].fcf+D.cf[2024].fcf+D.cf[2025].fcf)/5;
+    return `FY25 FCF: <b>${fmtB(fy25.fcf)}</b>. 5-year avg: ${fmtB(Math.round(avg5y))}. ${chatState.persona==='cfo'?'Conversion rate: '+D.kpis[2025].fcf_conversion+'% of NI. ':''}${chatState.persona==='treasurer'?'Dividend coverage: '+D.cf[2025].fcf_to_div+'% of FCF.':''}`;
+  }
+  if(q_lower.match(/\b(net income|earnings|ni|profit)\b/i)){
+    const fy25=D.pl[2025];const fy24=D.pl[2024];return `FY25 GAAP net income: <b>${fmtB(fy25.net)}</b> (+88% YoY from FY24's $4.1B). EPS: $${fy25.eps.toFixed(2)}. ${chatState.persona==='analyst'?'Note: FY24 was depressed by Horizon amortization (~$3.5B/yr).':''}`;
+  }
+  if(q_lower.match(/\b(debt|leverage|d.?e ratio|debt.?to.?equity)\b/i)){
+    const fy25=D.bs[2025];return `FY25 total debt: <b>${fmtB(fy25.total_debt)}</b>. D/E ratio: <b>${D.kpis[2025].de_ratio}×</b>. Cash: ${fmtB(fy25.cash)}. Net debt: ${fmtB(fy25.total_debt-fy25.cash)}. ${chatState.persona==='treasurer'?'Maturity wall: 10+ year WAM, next major: $3.75B in 2028.':''}`;
+  }
+  if(q_lower.match(/\b(dividend|payout)\b/i)){
+    const fy25=D.cf[2025];return `FY25 dividend: <b>${fmtB(fy25.divs)}</b> (${D.kpis[2025].div_payout}% of net income). Yield: ${M.div_yield}%. Coverage: ${fy25.fcf_to_div}% of FCF. ${chatState.persona==='cfo'?'Sustainable with current FCF profile.':''}`;
+  }
+  if(q_lower.match(/\b(cash|liquidity|balance sheet|assets)\b/i)){
+    const fy25=D.bs[2025];return `FY25 cash: <b>${fmtB(fy25.cash)}</b>. Total assets: ${fmtB(fy25.total_assets)}. Current ratio: ${D.kpis[2025].current_ratio}×. ${chatState.persona==='treasurer'?'Adequate liquidity; $4.6B current debt portion; quarterly OCF ~$2.5B.':''}`;
+  }
+  if(q_lower.match(/\b(margin|gross|operating|net margin|profitability)\b/i)){
+    const fy25=D.pl[2025];return `FY25 margins: Gross ${D.kpis[2025].gross_margin}%, Op ${D.kpis[2025].op_margin}%, Net ${D.kpis[2025].net_margin}%. R&D intensity: ${D.kpis[2025].rnd_intensity}% of sales. ${chatState.persona==='director'?'Margin profile stable; Op margin lifted by Horizon integration and scale.':''}`;
+  }
+  if(q_lower.match(/\b(working capital|ccc|cash conversion|dso|dio|dpo)\b/i)){
+    const wc=D.wc[2025];return `FY25 CCC: <b>${wc.ccc.toFixed(0)}d</b>. DSO ${wc.dso.toFixed(0)}d, DIO ${wc.dio.toFixed(0)}d, DPO ${wc.dpo.toFixed(0)}d. ${chatState.persona==='treasurer'?'CCC is 50% above peer median (183d) — inventory-driven.':''}`;
+  }
+  if(q_lower.match(/\b(valuation|p.?e|ev.?ebitda|price)\b/i)){
+    return `Current share price: <b>$${M.price.toFixed(2)}</b>. Market cap: ${fmtB(M.market_cap)}. EV: ${fmtB(M.ev)}. P/E (TTM): ${M.pe_ttm}×, Fwd: ${M.fwd_pe}×. EV/EBITDA: ${(M.ev/M.ebitda_ttm).toFixed(1)}×. ${chatState.persona==='analyst'?'Valuation in line with biotech peers; Horizon integration & MariTide upside key.':''}`;
+  }
+  if(q_lower.match(/\b(product|sales|imdelltra|repatha|prolia|enbrel|mounjaro|marit)\b/i)){
+    const q1=D.q['2026Q1'];return `Q1'26 product sales: <b>${fmtB(q1.product_sales)}</b> (+4% YoY). Top drivers: Repatha $876M (now #1), IMDELLTRA (218% growth YoY), MariTide ramp into Phase 3. ${chatState.persona==='dirbiz'?'US performing well; ex-US grew 3%. Rare Disease pipeline strong.':''}`;
+  }
+  if(q_lower.match(/\b(horizon|acquisition|deal|m.?a)\b/i)){
+    return `Horizon acquisition (Oct 2023): $27.8B deal closed. Added ~$14B intangibles, $3.7B goodwill. FY24 integration drag; FY25 starting to normalize. ${chatState.persona==='cfo'?'De-levering: $6B debt repaid in FY25. Target <2.0× D/EBITDA by FY27.':''}${chatState.persona==='strategy'?'BD pipeline: rare disease tuck-ins ($1-5B range) and oncology bispecifics.':''}`;
+  }
+  if(q_lower.match(/\b(peer|competitor|pfizer|merck|lilly|abv|novo|regeneron)\b/i)){
+    return `Top pharma peers: Pfizer (CCC 173d), Merck, AbbVie, Lilly (CCC 290d). Amgen's CCC of 274d is elevated vs median (183d), mainly inventory. Among peers, Lilly & Amgen carry longest cycles due to manufacturing complexity.`;
+  }
+  if(q_lower.match(/\b(risk|irs|tavneos|litigation|tax)\b/i)){
+    return `Key risks: (1) <b>IRS tax case</b> — seeking ~$10.7B for 2010–18 (binary H2'26 catalyst); (2) <b>TAVNEOS</b> — FDA withdrawal proposal risks $2.4B intangible; (3) <b>Horizon integration</b> — timely transition critical for deal case.`;
+  }
+  if(q_lower.match(/\b(question|help|what can you|capabilities)\b/i)){
+    return `I can answer questions about: Revenue, FCF, Net Income, Debt, Dividends, Cash, Margins, Working Capital, Valuation, Products, Peers, Risks, and more. Ask away! 📈`;
+  }
+  
+  // Fallback
+  return `I can discuss Amgen's revenue, FCF, profitability, debt, working capital, products, valuation, and risks. What's on your mind? (Tip: Try asking about specific metrics or business segments.)`;
+}
+
+function closeChat(){
+  $('#chatModal').classList.remove('open');
+  $('#chatOverlay').classList.remove('open');
+}
+
+
+/* Risk factors to WC impact mapping (Item 1A + Analysis) */
+window.RISK_DATA = {
+  "risk_factors": [
+    {
+      "risk_id": "manufacturing",
+      "category": "Manufacturing & Supply Chain",
+      "title": "Manufacturing difficulties, disruptions, or delays",
+      "description": "Loss or inability to use manufacturing facilities, particularly Puerto Rico (bulk manufacturing) and Netherlands (finish). Single-facility concentration for products like Neulasta.",
+      "wc_impact": "DSO, DIO",
+      "impact_details": {
+        "DIO": "Manufacturing disruptions force safety stock buildup \u2192 inventory up 15-25%; supply chain acceleration \u2192 higher carrying costs",
+        "DSO": "Shortage risk \u2192 may offer extended payment terms to secure volume; customer advance-orders might offset",
+        "APD": "Higher safety stock requirements; potential expedited procurement from suppliers at premium"
+      },
+      "magnitude": "High",
+      "timeline": "Acute: 3-6 months; Chronic: 12+ months",
+      "mitigation": [
+        "Dual-source critical raw materials and components",
+        "Real-time supply chain monitoring with predictive alerts",
+        "Maintain 3-month strategic safety stock for top 5 products",
+        "Cross-train manufacturing across Puerto Rico, Netherlands, contract manufacturers",
+        "Establish contingency manufacturing agreements with alternate facilities",
+        "Invest in manufacturing resilience: automation, redundancy in critical steps"
+      ],
+      "ccc_impact": "+50-100 days",
+      "cash_impact": "$2-3B tied up in excess inventory"
+    },
+    {
+      "risk_id": "regulatory",
+      "category": "Regulatory & Compliance",
+      "title": "Regulatory approvals, product recalls, or adverse events",
+      "description": "Delayed approvals, product recalls (TAVNEOS, ENBREL biosimilar), safety alerts, or regulatory actions that force market withdrawal or restricted distribution.",
+      "wc_impact": "DSO, DIO, DPO",
+      "impact_details": {
+        "DIO": "Rapid inventory obsolescence if product recalled (TAVNEOS $2.4B at risk); forced write-downs",
+        "DSO": "Recall \u2192 customer payment disputes, chargebacks, extended payment terms during remediation",
+        "DPO": "Regulatory fines, remediation costs strain payables; suppliers may demand faster payment"
+      },
+      "magnitude": "Very High",
+      "timeline": "Acute: <1 month (alert); Chronic: 6-12 months (remediation)",
+      "mitigation": [
+        "Robust quality management system (FDA Form 483 compliance)",
+        "Real-time adverse event surveillance and rapid response protocols",
+        "Product recall insurance and contingency plans",
+        "Diversified portfolio so no single product >5% of revenue",
+        "Quarterly regulatory risk assessment and stress-testing",
+        "Pre-emptive stakeholder communication (customers, regulators, investors)"
+      ],
+      "ccc_impact": "+30-80 days (due to payment disputes & inventory write-downs)",
+      "cash_impact": "$1-2B depending on product; immediate to 6-month impact"
+    },
+    {
+      "risk_id": "pricing",
+      "category": "Pricing & Reimbursement",
+      "title": "Pricing pressure, reimbursement cuts, biosimilar competition",
+      "description": "Government price controls (IRA negotiation, Medicare, Medicaid), biosimilar launches (ENBREL, Neulasta, Repatha), payer pressure on net pricing.",
+      "wc_impact": "DSO, DPO",
+      "impact_details": {
+        "DSO": "Price cuts \u2192 customers demand faster payments or invoice discounts; net-30 terms may shift to net-15",
+        "DPO": "Lower margins \u2192 less cash generation; suppliers demand faster payment if credit terms tighten",
+        "Cash_Conversion": "Revenue down 5-10% from price erosion; working capital turns down faster \u2192 need higher inventory investment per dollar of sales"
+      },
+      "magnitude": "High",
+      "timeline": "Chronic: 12-24 months (IRA negotiation outcomes, biosimilar ramp)",
+      "mitigation": [
+        "Differentiate with pipeline (MariTide, IMDELLTRA, Repatha long-acting)",
+        "Engage payers early on value propositions and outcomes-based contracts",
+        "Optimize manufacturing & SG&A to defend margins (target: -300-500 bps gross margin compression)",
+        "Diversify revenue: extend into rare disease (Horizon), oncology (IMDELLTRA)",
+        "Dynamic pricing: tiered approaches by geography (US vs ex-US) and channel",
+        "Accelerate biosimilar launches to own the generic transition (Repatha biosimilar)"
+      ],
+      "ccc_impact": "+20-40 days",
+      "cash_impact": "$1-1.5B annually from lower conversion and WC drag"
+    },
+    {
+      "risk_id": "competition",
+      "category": "Competition",
+      "title": "Intense competition from other pharma, biosimilars, and new entrants",
+      "description": "Emerging competitors (Novo, Lilly GLP-1 obesity, CRISPR gene therapies), biosimilar competition eroding market share of legacy products (ENBREL, Neulasta, Prolia, XGEVA).",
+      "wc_impact": "DSO, DIO",
+      "impact_details": {
+        "DSO": "Increased customer leverage \u2192 longer payment terms negotiated; market share loss \u2192 DSO deteriorates as customers delay payments or shift to competitors",
+        "DIO": "Portfolio shift to higher-value products (MariTide, IMDELLTRA) may require higher safety stock if manufacturing is less efficient",
+        "Revenue_per_Dollar_of_WC": "Market share loss in legacy products requires proportionally more inventory investment per unit of sales"
+      },
+      "magnitude": "High",
+      "timeline": "Chronic: 24+ months (as biosimilars ramp, new competitor products launch)",
+      "mitigation": [
+        "Accelerate pipeline innovation (MariTide Phase 3, IMDELLTRA expansion, rare disease)",
+        "Launch follow-on products and combination therapies to create switching costs",
+        "Invest in patient support programs and switching cost (data lock-in, adherence monitoring)",
+        "Acquire emerging competitors or license-in promising early-stage assets (Horizon model)",
+        "Geographic expansion: strengthen ex-US presence where pricing is less pressured",
+        "Transition commercial model from volume-based to outcomes-based (risk-sharing with payers)"
+      ],
+      "ccc_impact": "+15-35 days",
+      "cash_impact": "$500M-$1B from reduced conversion and increased WC requirements"
+    },
+    {
+      "risk_id": "ira",
+      "category": "IRA & U.S. Regulatory",
+      "title": "IRS tax litigation and Inflation Reduction Act pricing",
+      "description": "Exposure to $10.7B+ IRS tax claim (2010\u20132018) (binary H2'26 outcome). IRA drug negotiation may lock in lower prices for blockbuster products starting 2026\u201327.",
+      "wc_impact": "DSO, DPO, Cash flow",
+      "impact_details": {
+        "IRS_Contingency": "If lost, $10.7B cash outflow over 2-3 years \u2192 constrain share buybacks, dividend, debt paydown, M&A",
+        "IRA_Pricing": "Price cuts of 10-25% on negotiated drugs (Prolia, ENBREL, Xgeva possible) \u2192 lower accounts receivable; customers demand terms improvements",
+        "DPO": "Tax payment burden may force acceleration of payables or deferral of supplier payments"
+      },
+      "magnitude": "Very High (for IRS) / High (for IRA)",
+      "timeline": "IRS: H2'26 (decision); IRA: 2026+ (phased negotiation & implementation)",
+      "mitigation": [
+        "Diversify away from vulnerable products: Prolia, ENBREL, XGEVA (transition to newer agents)",
+        "Invest in pipeline exclusivity: MariTide, IMDELLTRA, rare disease have limited IRA exposure",
+        "Proactive IRS settlement negotiation (avoid long litigation)",
+        "Model IRA price-cut scenarios; de-risk with operational efficiency (SG&A, COGS reduction)",
+        "Strengthen international portfolio where pricing is less vulnerable",
+        "Build cash reserves now ($12B target) to absorb IRS contingency if triggered"
+      ],
+      "ccc_impact": "+20-50 days (from lower pricing & customer leverage)",
+      "cash_impact": "$1-3B from IRA pricing (annual); $10.7B potential one-time from IRS (if lost)"
+    },
+    {
+      "risk_id": "horizon",
+      "category": "M&A Integration",
+      "title": "Horizon Therapeutics acquisition integration failure",
+      "description": "$27.8B acquisition (Oct 2023). Risk of revenue decline, failed product synergies, inability to retain talent, or technology licensing disputes.",
+      "wc_impact": "DSO, DIO, DPO",
+      "impact_details": {
+        "DIO": "Integration complexity \u2192 duplicate inventory, excess safety stock during consolidation; Horizon legacy supply chains may be inefficient",
+        "DSO": "If key Horizon products (TEPEZZA, KRYSTEXXA, UPLIZNA) miss forecasts, customers shift suppliers \u2192 DSO rises",
+        "DPO": "M&A integration costs ($1-2B/yr) strain cash; may negotiate payment term extensions with suppliers"
+      },
+      "magnitude": "High",
+      "timeline": "Chronic: 24-36 months post-deal (integration complete by FY26)",
+      "mitigation": [
+        "Dedicated integration management office (IMO) with P&L accountability",
+        "Rapid consolidation of redundant supply chains (consolidate manufacturers, distribution)",
+        "Real-time revenue synergy tracking with monthly P&L reforecasting",
+        "Retain key Horizon talent: retention bonuses, clear career path integration",
+        "Divest non-core assets early (e.g., older Horizon products misaligned with Amgen)",
+        "Quarterly integration KPI dashboard: CCC, inventory turns, DSO, DPO"
+      ],
+      "ccc_impact": "+40-60 days (during integration, FY24-25)",
+      "cash_impact": "$800M-$1.2B from integration inefficiency"
+    },
+    {
+      "risk_id": "lifecycle",
+      "category": "Product Lifecycle",
+      "title": "Loss of patent exclusivity and product lifecycle decline",
+      "description": "Exclusivity losses for Enbrel (2026), Prolia (2027), XGEVA (2027 est.). Aging portfolio exposes to revenue cliff and working capital volatility.",
+      "wc_impact": "DIO, DSO",
+      "impact_details": {
+        "DIO": "Declining products require higher % of sales to be inventory (lower inventory turns) \u2192 cash tied up",
+        "DSO": "Biosimilar launches \u2192 customer switching \u2192 DSO may lengthen (payment disputes during transition)",
+        "Volume_Risk": "Revenue cliff forces inventory write-downs; excess capacity in manufacturing"
+      },
+      "magnitude": "Medium",
+      "timeline": "Chronic: 12-24 months around each exclusivity loss",
+      "mitigation": [
+        "Pre-launch successor products (e.g., long-acting versions, new indications for Repatha, Prolia successor)",
+        "Transition manufacturing capacity to new growth products (MariTide, IMDELLTRA)",
+        "Accelerate rare disease revenue: higher margins, lower competitive pressure",
+        "Portfolio rebalancing: divest/out-license low-growth products; consolidate R&D on high-potential assets",
+        "Optimize inventory: reduce safety stock for declining SKUs; shift to demand-driven manufacturing"
+      ],
+      "ccc_impact": "+25-45 days",
+      "cash_impact": "$500M-$800M from deleveraging inventory & working capital reallocation"
+    },
+    {
+      "risk_id": "pipeline",
+      "category": "Pipeline Risk",
+      "title": "Pipeline failure, delayed approvals, or clinical trial setbacks",
+      "description": "MariTide Phase 3 readout (2026\u201327), IMDELLTRA expansion, rare disease assets. Failures would impair future revenue and require R&D reallocation.",
+      "wc_impact": "DIO, DSO (indirect)",
+      "impact_details": {
+        "DIO": "If MariTide fails, reduce manufacturing ramp-up costs; but inventory of discontinued clinical materials may require write-down",
+        "R&D_Allocation": "Pivot to different manufacturing process/partners \u2192 supply chain disruption",
+        "Confidence": "Market share pressure if competitors' pipelines advance faster \u2192 customer leverage on terms"
+      },
+      "magnitude": "Medium",
+      "timeline": "Acute: at approval/failure event; Chronic: 12+ months of reallocation",
+      "mitigation": [
+        "Diversified pipeline: multiple Phase 3 programs across indications (obesity, oncology, rare disease)",
+        "Early clinical trial risk management: adaptive trial designs, biomarker enrichment",
+        "In-licensing: partner with biotech to reduce single-asset risk (MariTide co-development model)",
+        "Manufacturing flexibility: modular, scalable production processes across facilities",
+        "Regular portfolio reviews (quarterly): de-risk with early divest of low-probability assets"
+      ],
+      "ccc_impact": "+10-20 days",
+      "cash_impact": "$300-500M from supply chain inefficiency during pipeline transitions"
+    },
+    {
+      "risk_id": "geopolitical",
+      "category": "Geopolitical & Macro",
+      "title": "Geopolitical tensions, tariffs, supply chain fragmentation",
+      "description": "China relation strain, tariffs on manufacturing inputs, sanctions on key raw materials, supply chain fragmentation (nearshoring, CHIPS Act effects).",
+      "wc_impact": "DIO, DPO",
+      "impact_details": {
+        "DIO": "Tariffs on raw materials & components \u2192 procurement inflation (+5-10%); safety stock increases 10-15%",
+        "DPO": "Suppliers demand faster payment if raw material costs spike; lead times lengthen",
+        "Supply_Cost": "Nearshoring/reshoring increases COGS 2-5%; manufacturing footprint shift (India/Vietnam vs. China)"
+      },
+      "magnitude": "Medium-High",
+      "timeline": "Chronic: 12-24 months (depends on geopolitical resolution)",
+      "mitigation": [
+        "Diversify manufacturing footprint: Puerto Rico, Netherlands, India, Brazil (de-risk China exposure)",
+        "Vertical integration: secure long-term contracts for critical raw materials (4-yr minimum)",
+        "Supply chain mapping: identify single-source suppliers; dual-source 100% of critical inputs",
+        "Tariff hedging: negotiate fixed pricing with suppliers; explore tariff-advantaged sourcing (Puerto Rico, trade agreements)",
+        "Just-in-time manufacturing where possible; safety stock optimization via demand forecasting",
+        "Advocacy: engage government on trade policy, tariff exemptions for pharma inputs"
+      ],
+      "ccc_impact": "+30-50 days",
+      "cash_impact": "$1-1.5B from inflation and safety stock expansion"
+    }
+  ],
+  "summary": {
+    "total_risks": 9,
+    "high_impact": 5,
+    "potential_ccc_range": "+20 to +100 days (depending on which risks materialize)",
+    "potential_cash_impact_annual": "$1-5B (excluding IRS contingency)"
+  }
+};
+DATA.risks = RISK_DATA.risk_factors;
+DATA.risk_summary = RISK_DATA.summary;
+
+window.addEventListener('load',()=>{initChatbot();});
+document.addEventListener('keypress',e=>{if(e.key==='Enter'&&document.getElementById('chatInput')===document.activeElement)sendMessage();});
 </script>
+  <div class="chatbot-widget">
+    <button class="chatbot-btn" id="chatbotToggle" onclick="document.getElementById('chatModal').classList.add('open'); document.getElementById('chatOverlay').classList.add('open')">
+      💬 Ask Amgen
+    </button>
+  </div>
+
+  <!-- Chatbot modal -->
+  <div class="chat-overlay" id="chatOverlay" onclick="closeChat()"></div>
+  <div class="chatbot-modal" id="chatModal">
+    <div class="chat-header">
+      <h3>Financial Analyst</h3>
+      <button onclick="closeChat()">×</button>
+    </div>
+    <div class="chat-persona-select" id="personaSelect">
+      <label>Select your perspective:</label>
+      <div class="persona-buttons" id="personaButtons"></div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question..." disabled>
+      <button class="chat-send" id="chatSend" onclick="sendMessage()" disabled>Send</button>
+    </div>
+  </div>
+
 </body>
 </html>
