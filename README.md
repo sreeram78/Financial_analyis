@@ -173,7 +173,7 @@ D. Mitigation Potential (bottom) — $1.2B-$2.0B WC release roadmap
 
 ### Primary Files (Use These)
 ```
-✅ index_with_risk_analysis.html      — Main dashboard (OPEN THIS FIRST)
+✅ index.html      — Main dashboard (OPEN THIS FIRST)
 ✅ Amgen_Risk_Factors_...md           — Detailed risk analysis (SHARE FOR Q&A)
 ✅ RISK_ANALYSIS_INTEGRATION_GUIDE.md — How to use (READ THIS SECOND)
 ✅ RISK_ANALYSIS_VISUAL_GUIDE.md      — Visual preview (OPTIONAL, quick ref)
