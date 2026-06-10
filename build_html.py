@@ -1,6 +1,6 @@
 import json
 
-data = json.load(open("/home/claude/amgen-fin/data.json"))
+data = json.load(open("data.json"))
 DATA_JSON = json.dumps(data)
 
 HTML = r"""<!DOCTYPE html>
